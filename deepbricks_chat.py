@@ -21,7 +21,7 @@ def chat_with_ai(user_input):
 
     # 创建聊天完成
     completion = client.chat.completions.create(
-        model="claude-3.5-sonnet", messages=conversation_history
+        model="GPT-4o-mini", messages=conversation_history
     )
 
     # 获取AI的回复
@@ -35,12 +35,12 @@ def chat_with_ai(user_input):
 
 # 主循环
 while True:
-    user_input = input("提问: ")
+    user_input = input("😊: ")
     if user_input.lower() in ["退出", "exit", "quit"]:
         break
 
     response = chat_with_ai(user_input)
-    print("AI回答: ", response)
+    print("🤖: ", response)
     print("-" * 50)
 
 print("对话结束。")
