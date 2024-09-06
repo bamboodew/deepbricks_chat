@@ -35,12 +35,12 @@ def chat_with_ai(user_input):
 
 # 主循环
 while True:
-    user_input = input("您: ")
+    user_input = input("提问: ")
     if user_input.lower() in ["退出", "exit", "quit"]:
         break
 
     response = chat_with_ai(user_input)
-    print("AI: ", response)
+    print("AI回答: ", response)
     print("-" * 50)
 
 print("对话结束。")
