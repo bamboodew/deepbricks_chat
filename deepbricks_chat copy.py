@@ -1,7 +1,7 @@
 from openai import OpenAI
 import os
-import tiktoken
 from dotenv import load_dotenv
+import tiktoken  # 用于计算 token 数
 
 # 加载环境变量
 load_dotenv()
@@ -27,7 +27,6 @@ def count_tokens(text):
 
 
 def chat_with_ai(user_input):
-    """与 AI 交互"""
     global conversation_history
 
     # 计算用户输入的 token 数
@@ -42,7 +41,7 @@ def chat_with_ai(user_input):
             model="GPT-4o-mini", messages=conversation_history
         )
 
-        # 获取 AI 的回复
+        # 获取AI的回复
         ai_response = completion.choices[0].message.content
 
         # 计算 AI 回复的 token 数
@@ -56,3 +55,16 @@ def chat_with_ai(user_input):
         ai_tokens = count_tokens(ai_response)
 
     return ai_response, user_tokens, ai_tokens
+
+
+# 主循环
+print("开始对话 (输入 '退出', 'exit', 或 'quit' 结束对话)：")
+while True:
+    user_input = input("😊: ")
+    if user_input.lower() in ["退出", "exit", "quit"]:
+        print("感谢使用，对话已结束。")
+        break
+
+    response, user_tokens, ai_tokens = chat_with_ai(user_input)
+    print(f"🤖: {response} [输入 Token: {user_tokens}, 输出 Token: {ai_tokens}]")
+    print("-" * 50)
