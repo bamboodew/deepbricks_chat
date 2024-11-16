@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepBricks Chat</title>
     <link rel="stylesheet" href="/static/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>DeepBricks Chat</h1>
         <div id="chat-box"></div>
         <input type="text" id="user-input" placeholder="Type your message here..." />
-        <button id="send-button">Send</button>
+        <button id="send-button" type="button" class="bp5-button" aria-label="Open menu" title="Open menu">Send</button>
     </div>
 
     <script>
@@ -52,7 +53,14 @@
                 // 渲染 AI 的 Markdown 回复
                 const aiMessage = document.createElement("div");
                 aiMessage.className = "ai-message";
-                aiMessage.innerHTML = marked(data.response || "Error: No response");
+
+                // 分离 AI 回复文本和 token 数
+                const aiResponse = data.response.split(" [Tokens: ");
+                const aiText = aiResponse[0];  // AI 回复文本
+                const aiTokens = aiResponse[1] ? aiResponse[1].replace("]", "") : "N/A";  // 提取 token 数
+
+                // 使用 marked 渲染 AI 回复
+                aiMessage.innerHTML = marked.parse(aiText) + `<br><small>[Tokens: ${aiTokens}]</small>`;
                 chatBox.appendChild(aiMessage);
 
             } catch (error) {

@@ -51,8 +51,11 @@ def chat_with_ai(user_input):
         # 将 AI 的回复添加到对话历史
         conversation_history.append({"role": "assistant", "content": ai_response})
 
-    except Exception as e:
-        ai_response = f"发生错误: {str(e)}"
-        ai_tokens = count_tokens(ai_response)
+        # 将 token 数附加到 AI 回复
+        ai_response_with_tokens = f"{ai_response} [Tokens: {ai_tokens}]"
 
-    return ai_response, user_tokens, ai_tokens
+    except Exception as e:
+        ai_response_with_tokens = f"发生错误: {str(e)}"
+        ai_tokens = count_tokens(ai_response_with_tokens)
+
+    return ai_response_with_tokens, user_tokens, ai_tokens
