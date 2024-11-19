@@ -1,21 +1,18 @@
-import openai
+from openai import OpenAI
 import os
-import tiktoken
 from dotenv import load_dotenv
+import tiktoken  # 用于计算 token 数
 
 # 加载环境变量
 load_dotenv()
 
-# 从环境变量中获取 API 密钥
 API_KEY = os.environ.get("DEEPBRICKS_API_KEY")
 BASE_URL = "https://api.deepbricks.ai/v1/"
 
 if not API_KEY:
     raise ValueError("请设置 DEEPBRICKS_API_KEY 环境变量")
 
-# 配置 OpenAI API 密钥和 base URL
-openai.api_key = API_KEY
-openai.api_base = BASE_URL
+client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
 # 初始化对话历史
 conversation_history = []
@@ -30,7 +27,6 @@ def count_tokens(text):
 
 
 def chat_with_ai(user_input):
-    """与 AI 交互"""
     global conversation_history
 
     # 计算用户输入的 token 数
@@ -39,39 +35,36 @@ def chat_with_ai(user_input):
     # 将用户输入添加到对话历史
     conversation_history.append({"role": "user", "content": user_input})
 
-<<<<<<< HEAD
-    # 使用新版 API 创建聊天，注意 `messages` 参数和 `model`
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo", messages=conversation_history
-    )
-
-    # 获取 AI 的回复
-    ai_response = response["choices"][0]["message"]["content"]
-
-    # 将 AI 的回复添加到对话历史
-    conversation_history.append({"role": "assistant", "content": ai_response})
-=======
     try:
         # 创建聊天完成
         completion = client.chat.completions.create(
             model="GPT-4o-mini", messages=conversation_history
         )
 
-        # 获取 AI 的回复
+        # 获取AI的回复
         ai_response = completion.choices[0].message.content
 
         # 计算 AI 回复的 token 数
         ai_tokens = count_tokens(ai_response)
->>>>>>> d2edff4d2273de94b0dd8ec746ce8693d8a3950c
 
         # 将 AI 的回复添加到对话历史
         conversation_history.append({"role": "assistant", "content": ai_response})
 
-        # 将 token 数附加到 AI 回复
-        ai_response_with_tokens = f"{ai_response} [Tokens: {ai_tokens}]"
-
     except Exception as e:
-        ai_response_with_tokens = f"发生错误: {str(e)}"
-        ai_tokens = count_tokens(ai_response_with_tokens)
+        ai_response = f"发生错误: {str(e)}"
+        ai_tokens = count_tokens(ai_response)
 
-    return ai_response_with_tokens, user_tokens, ai_tokens
+    return ai_response, user_tokens, ai_tokens
+
+
+# 主循环
+print("开始对话 (输入 '退出', 'exit', 或 'quit' 结束对话)：")
+while True:
+    user_input = input("😊: ")
+    if user_input.lower() in ["退出", "exit", "quit"]:
+        print("感谢使用，对话已结束。")
+        break
+
+    response, user_tokens, ai_tokens = chat_with_ai(user_input)
+    print(f"🤖: {response} [输入 Token: {user_tokens}, 输出 Token: {ai_tokens}]")
+    print("-" * 50)
