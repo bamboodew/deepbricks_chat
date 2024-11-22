@@ -1,16 +1,19 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from deepbricks_chat import chat_with_ai
 import logging
 from typing import Tuple, Dict, Any
+import secrets
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+# Set a secure secret key for sessions
+app.secret_key = secrets.token_hex(32)
 # Configure CORS with specific origins
 CORS(app, resources={r"/*": {"origins": ["http://localhost:*", "https://yourdomain.com"]}})
 
@@ -30,29 +33,55 @@ def health_check() -> Dict[str, str]:
     return {"status": "healthy"}
 
 @app.route("/")
-def index() -> str:
-    """Return chat interface page"""
+def index():
+    """返回聊天页面"""
     return render_template("index.html")
+
+@app.route("/api-key", methods=["POST"])
+def save_api_key():
+    """Save API key to session"""
+    data = request.get_json()
+    api_key = data.get("api_key")
+    
+    if not api_key:
+        return jsonify({"error": "API key is required"}), 400
+    
+    # Store API key in session
+    session['api_key'] = api_key
+    return jsonify({"message": "API key saved successfully"}), 200
+
+@app.route("/api-key", methods=["GET"])
+def check_api_key():
+    """Check if API key exists in session"""
+    api_key = session.get('api_key')
+    return jsonify({"has_key": bool(api_key)}), 200
 
 @app.route("/chat", methods=["POST"])
 @limiter.limit("10 per minute")
 def chat() -> Tuple[Dict[str, Any], int]:
-    """Handle chat requests"""
-    try:
-        # 从请求头获取API密钥
+    """处理聊天请求"""
+    # First try to get API key from session
+    api_key = session.get('api_key')
+    
+    # If not in session, try to get from header
+    if not api_key:
         api_key = request.headers.get('X-API-Key')
 
-        data = request.get_json()
-        user_input = data.get("message", "")
+    if not api_key:
+        return jsonify({"error": "API key is required"}), 401
 
-        if not user_input:
-            return jsonify({"error": "No input provided"}), 400
+    data = request.get_json()
+    user_input = data.get("message", "")
 
-        if len(user_input) > MAX_MESSAGE_LENGTH:
-            return jsonify({"error": f"Message exceeds maximum length of {MAX_MESSAGE_LENGTH}"}), 400
+    if not user_input:
+        return jsonify({"error": "No input provided"}), 400
 
-        logger.info(f"Processing chat request: {user_input[:50]}...")
+    if len(user_input) > MAX_MESSAGE_LENGTH:
+        return jsonify({"error": f"Message exceeds maximum length of {MAX_MESSAGE_LENGTH}"}), 400
 
+    logger.info(f"Processing chat request: {user_input[:50]}...")
+
+    try:
         # 调用chat_with_ai并获取响应和token计数
         ai_response, user_tokens, ai_tokens = chat_with_ai(user_input, api_key)
         
