@@ -121,3 +121,37 @@ button:hover {
     user-select: text; /* Enable text selection */
     -webkit-user-select: text; /* For Safari */
     cursor: text; /* Show text cursor */
+}
+
+/* API Key Section */
+#api-key-section {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#api-key-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+#save-api-key {
+    padding: 10px 20px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#save-api-key:hover {
+    background-color: #0055b3;
+}
+
+/* Error message styling */
+.ai-message.error {
+    color: #dc3545;
+}

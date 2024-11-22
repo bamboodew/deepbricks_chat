@@ -34,36 +34,36 @@ def index() -> str:
     """Return chat interface page"""
     return render_template("index.html")
 
-def validate_chat_input(data: Dict[str, Any]) -> Tuple[bool, str]:
-    """Validate chat input data"""
-    if not data or "message" not in data:
-        return False, "No input provided"
-    if len(data["message"]) > MAX_MESSAGE_LENGTH:
-        return False, f"Message exceeds maximum length of {MAX_MESSAGE_LENGTH}"
-    return True, ""
-
 @app.route("/chat", methods=["POST"])
 @limiter.limit("10 per minute")
 def chat() -> Tuple[Dict[str, Any], int]:
     """Handle chat requests"""
     try:
-        data = request.get_json()
-        is_valid, error_message = validate_chat_input(data)
-        
-        if not is_valid:
-            return jsonify({"error": error_message}), 400
+        # 从请求头获取API密钥
+        api_key = request.headers.get('X-API-Key')
 
-        user_input = data["message"]
+        data = request.get_json()
+        user_input = data.get("message", "")
+
+        if not user_input:
+            return jsonify({"error": "No input provided"}), 400
+
+        if len(user_input) > MAX_MESSAGE_LENGTH:
+            return jsonify({"error": f"Message exceeds maximum length of {MAX_MESSAGE_LENGTH}"}), 400
+
         logger.info(f"Processing chat request: {user_input[:50]}...")
 
-        response, user_tokens, ai_tokens = chat_with_ai(user_input)
+        # 调用chat_with_ai并获取响应和token计数
+        ai_response, user_tokens, ai_tokens = chat_with_ai(user_input, api_key)
         
         return jsonify({
-            "response": response,
+            "response": ai_response,
             "user_tokens": user_tokens,
-            "ai_tokens": ai_tokens,
+            "ai_tokens": ai_tokens
         }), 200
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 401
     except Exception as e:
         logger.error(f"Error processing chat request: {str(e)}", exc_info=True)
         return jsonify({"error": "Internal server error"}), 500
