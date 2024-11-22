@@ -1,5 +1,5 @@
-import openai
 import os
+from openai import OpenAI
 import tiktoken
 from dotenv import load_dotenv
 
@@ -13,9 +13,11 @@ BASE_URL = "https://api.deepbricks.ai/v1/"
 if not API_KEY:
     raise ValueError("请设置 DEEPBRICKS_API_KEY 环境变量")
 
-# 配置 OpenAI API 密钥和 base URL
-openai.api_key = API_KEY
-openai.api_base = BASE_URL
+# 初始化 OpenAI 客户端
+client = OpenAI(
+    api_key=API_KEY,
+    base_url=BASE_URL
+)
 
 # 初始化对话历史
 conversation_history = []
@@ -39,22 +41,11 @@ def chat_with_ai(user_input):
     # 将用户输入添加到对话历史
     conversation_history.append({"role": "user", "content": user_input})
 
-<<<<<<< HEAD
-    # 使用新版 API 创建聊天，注意 `messages` 参数和 `model`
-    response = openai.ChatCompletion.create(
-        model="gpt-4-turbo", messages=conversation_history
-    )
-
-    # 获取 AI 的回复
-    ai_response = response["choices"][0]["message"]["content"]
-
-    # 将 AI 的回复添加到对话历史
-    conversation_history.append({"role": "assistant", "content": ai_response})
-=======
     try:
-        # 创建聊天完成
+        # 使用新版 API 创建聊天
         completion = client.chat.completions.create(
-            model="GPT-4o-mini", messages=conversation_history
+            model="gpt-4-turbo",
+            messages=conversation_history
         )
 
         # 获取 AI 的回复
@@ -62,7 +53,6 @@ def chat_with_ai(user_input):
 
         # 计算 AI 回复的 token 数
         ai_tokens = count_tokens(ai_response)
->>>>>>> d2edff4d2273de94b0dd8ec746ce8693d8a3950c
 
         # 将 AI 的回复添加到对话历史
         conversation_history.append({"role": "assistant", "content": ai_response})
@@ -70,8 +60,9 @@ def chat_with_ai(user_input):
         # 将 token 数附加到 AI 回复
         ai_response_with_tokens = f"{ai_response} [Tokens: {ai_tokens}]"
 
-    except Exception as e:
-        ai_response_with_tokens = f"发生错误: {str(e)}"
-        ai_tokens = count_tokens(ai_response_with_tokens)
+        return ai_response_with_tokens, user_tokens, ai_tokens
 
-    return ai_response_with_tokens, user_tokens, ai_tokens
+    except Exception as e:
+        error_message = f"发生错误: {str(e)}"
+        ai_tokens = count_tokens(error_message)
+        return error_message, user_tokens, ai_tokens

@@ -113,3 +113,11 @@ button {
 button:hover {
     background-color: #0055b3;
 }
+
+.ai-message {
+    margin: 10px 0;
+    text-align: left;
+    color: #0066cc;
+    user-select: text; /* Enable text selection */
+    -webkit-user-select: text; /* For Safari */
+    cursor: text; /* Show text cursor */
