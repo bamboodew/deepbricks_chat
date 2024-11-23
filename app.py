@@ -8,27 +8,37 @@ from typing import Tuple, Dict, Any
 import secrets
 from redis import Redis
 from redis.exceptions import ConnectionError
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-# Set a secure secret key for sessions
-app.secret_key = secrets.token_hex(32)
-# Configure CORS with specific origins
+# Set a secure secret key for sessions from environment variable
+app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+# Configure CORS with specific origins from environment
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:*').split(',')
 CORS(
     app,
-    resources={r"/*": {"origins": ["http://localhost:*", "https://yourdomain.com"]}},
+    resources={r"/*": {"origins": ALLOWED_ORIGINS}},
 )
 
 # Configure rate limiting
 try:
+    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
+    RATE_LIMIT_DAY = os.getenv('RATE_LIMIT_PER_DAY', '100')
+    RATE_LIMIT_MINUTE = os.getenv('RATE_LIMIT_PER_MINUTE', '10')
+    
     limiter = Limiter(
         app=app,
         key_func=get_remote_address,
-        default_limits=["100 per day", "10 per minute"],
-        storage_uri="redis://localhost:6379",
+        default_limits=[f"{RATE_LIMIT_DAY} per day", f"{RATE_LIMIT_MINUTE} per minute"],
+        storage_uri=REDIS_URL,
     )
     logger.info("Successfully connected to Redis for rate limiting")
 except ConnectionError:
