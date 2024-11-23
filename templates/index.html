@@ -96,7 +96,6 @@
                 const message = userInput.value.trim();
                 if (!message) return;
 
-                // Add user message to chat
                 const userMessage = document.createElement("div");
                 userMessage.className = "user-message";
                 userMessage.textContent = message;
@@ -120,13 +119,62 @@
                         throw new Error(data.error || 'Failed to get response');
                     }
 
-                    // 渲染 AI 的 Markdown 回复
+                    // Create AI message container with wrapper for content
                     const aiMessage = document.createElement("div");
                     aiMessage.className = "ai-message";
 
+                    // Create a wrapper for the content
+                    const contentWrapper = document.createElement("div");
+                    contentWrapper.className = "ai-message-content";
+
                     // Format the response with tokens
                     const tokenInfo = `[User Tokens: ${data.user_tokens}, AI Tokens: ${data.ai_tokens}]`;
-                    aiMessage.innerHTML = marked.parse(data.response) + `<br><small>${tokenInfo}</small>`;
+                    contentWrapper.innerHTML = marked.parse(data.response);
+
+                    // Add copy button with SVG icon
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-button';
+                    copyButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    `;
+                    
+                    copyButton.onclick = async () => {
+                        try {
+                            await navigator.clipboard.writeText(data.response);
+                            copyButton.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            `;
+                            setTimeout(() => {
+                                copyButton.innerHTML = `
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                `;
+                            }, 1000);
+                        } catch (err) {
+                            console.error('Failed to copy:', err);
+                        }
+                    };
+
+                    // Create a container for the token info and copy button
+                    const footerContainer = document.createElement('div');
+                    footerContainer.className = 'message-footer';
+                    
+                    // Add token info and copy button to the footer
+                    const tokenSpan = document.createElement('small');
+                    tokenSpan.textContent = tokenInfo;
+                    footerContainer.appendChild(tokenSpan);
+                    footerContainer.appendChild(copyButton);
+
+                    // Add content and footer to message
+                    aiMessage.appendChild(contentWrapper);
+                    aiMessage.appendChild(footerContainer);
                     chatBox.appendChild(aiMessage);
 
                 } catch (error) {
@@ -137,7 +185,6 @@
                     chatBox.appendChild(errorMessage);
 
                     if (error.message.includes('API key')) {
-                        // If API key is invalid, show the API key input section
                         apiKeySection.style.display = 'block';
                         chatSection.style.display = 'none';
                     }

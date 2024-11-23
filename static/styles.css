@@ -72,11 +72,73 @@ button:hover {
 
 .ai-message {
     margin: 10px 0;
-    text-align: left;
-    color: #0066cc;
-    user-select: text; /* Enable text selection */
-    -webkit-user-select: text; /* For Safari */
-    cursor: text; /* Show text cursor */
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    position: relative;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+.ai-message-content {
+    margin-bottom: 8px;
+}
+
+.message-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.copy-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.6;
+    transition: all 0.2s;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.copy-button:hover {
+    opacity: 1;
+    background-color: #e9ecef;
+}
+
+.copy-button svg {
+    color: #6c757d;
+}
+
+.message-footer small {
+    color: #6c757d;
+    font-size: 0.85em;
+}
+
+.ai-message small {
+    display: block;
+    margin-top: 5px;
+    color: #6c757d;
+    font-size: 0.85em;
+}
+
+/* Copy success animation */
+@keyframes copySuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.copy-success {
+    animation: copySuccess 0.3s ease-in-out;
 }
 
 /* Code block styling */
