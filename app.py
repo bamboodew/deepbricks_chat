@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # Set a secure secret key for sessions from environment variable
-app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 # Configure CORS with specific origins from environment
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:*').split(',')
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:*").split(",")
 CORS(
     app,
     resources={r"/*": {"origins": ALLOWED_ORIGINS}},
@@ -30,10 +30,10 @@ CORS(
 
 # Configure rate limiting
 try:
-    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
-    RATE_LIMIT_DAY = os.getenv('RATE_LIMIT_PER_DAY', '100')
-    RATE_LIMIT_MINUTE = os.getenv('RATE_LIMIT_PER_MINUTE', '10')
-    
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+    RATE_LIMIT_DAY = os.getenv("RATE_LIMIT_PER_DAY", "100")
+    RATE_LIMIT_MINUTE = os.getenv("RATE_LIMIT_PER_MINUTE", "10")
+
     limiter = Limiter(
         app=app,
         key_func=get_remote_address,
